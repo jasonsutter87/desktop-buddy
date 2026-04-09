@@ -21,6 +21,8 @@
   let menuX = $state(0);
   let menuY = $state(0);
   let pendingIdle = false;
+  let offsetX = $state(0);
+  let wanderTimer: ReturnType<typeof setTimeout> | null = null;
 
   function showSpeech(text: string, duration = 3000) {
     bubbleText = text;
@@ -205,16 +207,61 @@
       handleDeath();
     });
 
+    // Start idle wandering
+    scheduleWander();
+
     return () => {
       unsubStats();
       unsubTerminal();
       unsubTray();
       unsubDied();
+      if (wanderTimer) clearTimeout(wanderTimer);
     };
   });
+
+  function scheduleWander() {
+    // Random delay between 8-20 seconds
+    const delay = 8000 + Math.random() * 12000;
+    wanderTimer = setTimeout(() => {
+      if (!pet || pet.life_state !== 'alive' || pendingIdle) {
+        scheduleWander();
+        return;
+      }
+      // Do a little walk
+      const idleAnims = ['idle', 'mood-happy', 'mood-hungry', 'mood-sad', 'mood-dirty'];
+      if (!idleAnims.includes(animation)) {
+        scheduleWander();
+        return;
+      }
+      // Pick a random direction, walk a little
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      const distance = 10 + Math.floor(Math.random() * 20);
+      animation = 'walk';
+      pendingIdle = true;
+
+      // Animate the offset over 1 second
+      const steps = 10;
+      const stepSize = (direction * distance) / steps;
+      let step = 0;
+      const walkInterval = setInterval(() => {
+        offsetX = Math.max(-40, Math.min(40, offsetX + stepSize));
+        step++;
+        if (step >= steps) {
+          clearInterval(walkInterval);
+        }
+      }, 100);
+
+      // Return to idle after walk animation
+      setTimeout(() => {
+        animation = getMoodIdle();
+        pendingIdle = false;
+        scheduleWander();
+      }, 1200);
+    }, delay);
+  }
 </script>
 
-<div class="pet-container">
+<div class="pet-container" style="transform: translateX(calc(-50% + {offsetX}px));">
   {#if showBubble}
     <SpeechBubble text={bubbleText} onDone={() => showBubble = false} />
   {/if}
