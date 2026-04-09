@@ -1,0 +1,22 @@
+{
+  "name": "sprite-gen",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.5.2",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "@img/sharp-win32-x64"
+    ]
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
+  }
+}
